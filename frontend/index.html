@@ -8,8 +8,11 @@
 <body>
   <h1>Harpoon</h1>
   <form id="harpoon-form">
-    <label for="image">Image:</label>
+    <label for="image">Image (required):</label>
     <input type="text" id="image" name="image" required placeholder="e.g., hello-world:latest">
+    <br>
+    <label for="platform">Platform:</label>
+    <input type="text" id="platform" name="platform" placeholder="e.g., linux/amd64">
     <br><br>
     <button type="submit">Submit</button>
   </form>
