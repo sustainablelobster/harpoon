@@ -1,12 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Harpoon</title>
 </head>
+
 <body>
   <h1>Harpoon</h1>
+  <p>
+    This tool allows you to download images from <a href="https://hub.docker.com/">Docker Hub</a> as tarballs for
+    deployment on systems without internet access.
+  </p>
+  <p>
+    How to use:
+  <ul>
+    <li>
+      Enter the image's name in the <strong>Image</strong> field.
+    </li>
+    <li>
+      Optionally, specify the image's platform in the <strong>Platform</strong> field (the default is
+      <code>linux/amd64</code>).
+    </li>
+    <li>
+      Click <strong>Submit</strong> to request the image (please note that this may take some time depending on the
+      image's size).
+    </li>
+    <li>
+      Once the image is ready, a download link for the tarball will appear.
+    </li>
+  </ul>
+  </p>
   <form id="harpoon-form">
     <label for="image">Image (required):</label>
     <input type="text" id="image" name="image" required placeholder="e.g., hello-world:latest">
@@ -19,4 +44,5 @@
   <h2 id="output"></h2>
   <script src="app.js"></script>
 </body>
+
 </html>
