@@ -9,9 +9,26 @@
 
 <body>
   <h1>Harpoon</h1>
+  <form id="harpoon-form">
+    <table>
+      <tr>
+        <td><label for="image">Image (required):</label></td>
+        <td><input type="text" id="image" name="image" required placeholder="e.g., hello-world:latest"></td>
+      </tr>
+      <tr>
+        <td><label for="platform">Platform:</label></td>
+        <td><input type="text" id="platform" name="platform" placeholder="e.g., linux/amd64"></td>
+      </tr>
+    </table>
+    <br>
+    <button type="submit">Submit</button>
+  </form>
+  <h2 id="output"></h2>
+  <script src="app.js"></script>
+  <hr>
   <p>
-    This tool allows you to download images from <a href="https://hub.docker.com/">Docker Hub</a> as tarballs for
-    deployment on systems without internet access.
+    Harpoon allows you to download images from <a href="https://hub.docker.com/" target="_blank">Docker Hub</a> as
+    tarballs for deployment on systems without internet access.
   </p>
   <p>
     How to use:
@@ -32,17 +49,6 @@
     </li>
   </ul>
   </p>
-  <form id="harpoon-form">
-    <label for="image">Image (required):</label>
-    <input type="text" id="image" name="image" required placeholder="e.g., hello-world:latest">
-    <br>
-    <label for="platform">Platform:</label>
-    <input type="text" id="platform" name="platform" placeholder="e.g., linux/amd64">
-    <br><br>
-    <button type="submit">Submit</button>
-  </form>
-  <h2 id="output"></h2>
-  <script src="app.js"></script>
 </body>
 
 </html>
