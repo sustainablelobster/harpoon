@@ -1,32 +1,54 @@
-const API_ENDPOINT = "API ENDPOINT HERE";
-const FORM_ID = "harpoon-form";
-const IMAGE_INPUT_ID = "image";
-const IMAGES_ROOT = "/images";
-const OUTPUT_ID = "output";
-const PLATFORM_ID = "platform";
+const ELEMENT_IDS = {
+    form: "form",
+    image: "image",
+    output: "output",
+    platform: "platform"
+};
+
+function getElementById(id) {
+    const element = document.getElementById(id);
+    if (!element) {
+        throw new Error(`No element with ID "${id}".`);
+    }
+    return element;
+}
 
 function disableForm(isDisabled) {
-    const form = document.getElementById(FORM_ID);
-    for (let i = 0; i < form.elements.length; i++) {
-        form.elements[i].disabled = isDisabled;
+    const form = getElementById(ELEMENT_IDS.form);
+    for (const element of form.elements) {
+        element.disabled = isDisabled;
     }
 }
 
-function setOutput(message) {
-    const output = document.getElementById(OUTPUT_ID);
-    output.innerHTML = message;
+function setOutput(message, isHTML) {
+    const output = getElementById(ELEMENT_IDS.output);
+    if (isHTML) {
+        output.innerHTML = message;
+    } else {
+        output.textContent = message;
+    }
 }
 
 function sanitize(s) {
     return s.replace(/[^A-Za-z0-9_.-]/g, "_");
 }
 
-async function requestTarballHead(tarballPath) {
-    return await fetch(tarballPath, { method: "HEAD" });
+function getTarballPath(image, platform) {
+    let path = `${CONFIG.imagesRoot}/${sanitize(image)}`;
+    if (platform) {
+        path += `_${sanitize(platform)}`;
+    }
+    path += ".tar.gz";
+    return path;
+}
+
+async function isTarballCached(tarballPath) {
+    const response = await fetch(tarballPath, { method: "HEAD" });
+    return response.ok;
 }
 
 async function requestImage(image, platform) {
-    return await fetch(API_ENDPOINT, {
+    return await fetch(CONFIG.apiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -39,29 +61,34 @@ async function requestImage(image, platform) {
 async function formEventListener(event) {
     event.preventDefault();
     disableForm(true);
-    setOutput("Working...");
+    setOutput("Working...", false);
 
-    const image = document.getElementById(IMAGE_INPUT_ID).value;
-    const platform = document.getElementById(PLATFORM_ID).value;
+    let output = ["ERROR: Unknown error occurred", false];
 
-    let tarballPath = `${IMAGES_ROOT}/${sanitize(image)}`;
-    if (platform != "") {
-        tarballPath += `_${sanitize(platform)}`;
+    try {
+        const image = getElementById(ELEMENT_IDS.image).value;
+        const platform = getElementById(ELEMENT_IDS.platform).value;
+        const tarballPath = getTarballPath(image, platform);
+        let isTarballAvailable = await isTarballCached(tarballPath);
+        let errorMessage = "";
+
+        if (!isTarballAvailable) {
+            const response = await requestImage(image, platform);
+            isTarballAvailable = response.ok;
+            errorMessage = await response.text();
+        }
+
+        if (isTarballAvailable) {
+            output = [`<a href="${tarballPath}">Download</a>`, true];
+        } else {
+            output = [`ERROR: ${errorMessage}`, false];
+        }
+    } catch (error) {
+        output = [`ERROR: ${error.message}`, false];
     }
-    tarballPath += ".tar.gz";
 
-    let response = await requestTarballHead(tarballPath);
-    if (!response.ok) {
-        response = await requestImage(image, platform);
-    }
-
-    if (response.ok) {
-        setOutput(`<a href="${tarballPath}">Download</a>`);
-    } else {
-        setOutput(`ERROR: ${await response.text()}`);
-    }
-
+    setOutput(...output);
     disableForm(false);
 }
 
-document.getElementById("harpoon-form").addEventListener("submit", formEventListener);
+getElementById(ELEMENT_IDS.form).addEventListener("submit", formEventListener);

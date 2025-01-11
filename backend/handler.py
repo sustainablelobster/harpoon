@@ -9,7 +9,7 @@ import boto3
 
 GZIP = "/opt/gzip/gzip"
 HARPOON_BUCKET = os.getenv("HARPOON_BUCKET")
-HARPOON_IMAGES_ROOT = "images"
+HARPOON_IMAGES_ROOT = os.getenv("HARPOON_IMAGES_ROOT")
 SKOPEO = "/opt/skopeo/skopeo"
 SKOPEO_POLICY = "/opt/skopeo/policy.json"
 
