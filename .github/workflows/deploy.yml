@@ -1,0 +1,40 @@
+name: Deploy to AWS
+
+on:
+  push:
+    branches:
+      - main 
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure AWS CLI
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ secrets.AWS_ROLE }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Sync files to S3
+      run: |
+        aws s3 sync ./frontend/ s3:/${{ env.S3_BUCKET }} --delete
+
+    - name: Invalidate CloudFront cache
+      run: |
+        aws cloudfront create-invalidation \
+          --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
+          --paths "/*"
+
+    - name: Zip Lambda function code
+      run: |
+        zip -j lambda_function.zip ./backend/handler.py
+
+    - name: Deploy Lambda function
+      run: |
+        aws lambda update-function-code \
+          --function-name ${{ env.LAMBDA_FUNCTION }} \
+          --zip-file fileb://lambda_function.zip
