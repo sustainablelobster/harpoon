@@ -3,7 +3,10 @@ name: Deploy to AWS
 on:
   push:
     branches:
-      - main 
+      - main
+    paths:
+      - backend/**
+      - frontend/**
 
 jobs:
   deploy:
@@ -11,35 +14,50 @@ jobs:
     environment: deploy
 
     permissions:
-        id-token: write
-        contents: read
+      id-token: write
+      contents: read
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Configure AWS CLI
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        role-to-assume: ${{ secrets.AWS_ROLE }}
-        aws-region: ${{ vars.AWS_REGION }}
+      - name: Configure AWS CLI
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE }}
+          aws-region: ${{ vars.AWS_REGION }}
 
-    - name: Sync files to S3
-      run: |
-        aws s3 sync ./frontend/ s3://${{ vars.S3_BUCKET }} --exclude "config.js"
+      - name: Check paths
+        id: changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            backend:
+              - "backend/**"
+            frontent:
+              - "frontend/**"
 
-    - name: Invalidate CloudFront cache
-      run: |
-        aws cloudfront create-invalidation \
-          --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
-          --paths "/*"
+      - name: Zip Lambda function code
+        if: steps.changes.outputs.backend == "true"
+        run: |
+          zip -j lambda_function.zip ./backend/handler.py
 
-    - name: Zip Lambda function code
-      run: |
-        zip -j lambda_function.zip ./backend/handler.py
+      - name: Deploy Lambda function
+        if: steps.changes.outputs.backend == "true"
+        run: |
 
-    - name: Deploy Lambda function
-      run: |
-        aws lambda update-function-code \
-          --function-name ${{ vars.LAMBDA_FUNCTION }} \
-          --zip-file fileb://lambda_function.zip
+          aws lambda update-function-code \
+            --function-name ${{ vars.LAMBDA_FUNCTION }} \
+            --zip-file fileb://lambda_function.zip
+
+      - name: Sync files to S3
+        if: steps.changes.outputs.frontend == "true"
+        run: |
+          aws s3 sync ./frontend/ s3://${{ vars.S3_BUCKET }} --exclude "config.js"
+
+      - name: Invalidate CloudFront cache
+        if: steps.changes.outputs.frontend == "true"
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "/*"
