@@ -26,7 +26,7 @@ jobs:
 
     - name: Sync files to S3
       run: |
-        aws s3 sync ./frontend/ s3://${{ vars.S3_BUCKET }}
+        aws s3 sync ./frontend/ s3://${{ vars.S3_BUCKET }} --exclude "config.js"
 
     - name: Invalidate CloudFront cache
       run: |
