@@ -7,6 +7,7 @@ on:
     paths:
       - backend/**
       - frontend/**
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -40,7 +41,7 @@ jobs:
       - name: Zip Lambda function code
         if: steps.changes.outputs.backend == 'true'
         run: |
-          zip -j lambda_function.zip ./backend/handler.py
+          zip -j lambda_function.zip ./backend/lambda_function.py
 
       - name: Deploy Lambda function
         if: steps.changes.outputs.backend == 'true'
