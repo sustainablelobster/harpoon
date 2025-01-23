@@ -68,6 +68,6 @@ def lambda_handler(event, context):
     except (json.JSONDecodeError, KeyError, TypeError):
         return {"statusCode": 400, "body": "bad request"}
     except subprocess.CalledProcessError:
-        return {"statusCode": 404, "body": f"image not found"}
+        return {"statusCode": 404, "body": "image not found"}
     except:
         return {"statusCode": 500, "body": "internal error"}
