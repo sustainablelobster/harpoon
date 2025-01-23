@@ -38,12 +38,12 @@ jobs:
               - "frontend/**"
 
       - name: Zip Lambda function code
-        if: steps.changes.outputs.backend == "true"
+        if: steps.changes.outputs.backend == 'true'
         run: |
           zip -j lambda_function.zip ./backend/handler.py
 
       - name: Deploy Lambda function
-        if: steps.changes.outputs.backend == "true"
+        if: steps.changes.outputs.backend == 'true'
         run: |
 
           aws lambda update-function-code \
@@ -51,12 +51,12 @@ jobs:
             --zip-file fileb://lambda_function.zip
 
       - name: Sync files to S3
-        if: steps.changes.outputs.frontend == "true"
+        if: steps.changes.outputs.frontend == 'true'
         run: |
           aws s3 sync ./frontend/ s3://${{ vars.S3_BUCKET }} --exclude "config.js"
 
       - name: Invalidate CloudFront cache
-        if: steps.changes.outputs.frontend == "true"
+        if: steps.changes.outputs.frontend == 'true'
         run: |
           aws cloudfront create-invalidation \
             --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
